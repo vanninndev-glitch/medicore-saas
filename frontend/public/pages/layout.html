@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Dashboard — MediCore</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Socket.IO Client -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- CSS Global -->
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/components/sidebar.css" />
+  <link rel="stylesheet" href="/assets/css/components/topbar.css" />
+
+  <!-- Configuración global -->
+  <script>
+    window.MEDICORE_API_URL    = 'http://localhost:3000/api/v1';
+    window.MEDICORE_SOCKET_URL = 'http://localhost:3000';
+  </script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<aside id="sidebar" role="complementary" aria-label="Menú de navegación">
+  <!-- Renderizado por sidebar.js -->
+</aside>
+
+<!-- Overlay mobile -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="window._sidebar?.toggleMobile()"></div>
+
+<!-- ══════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════ -->
+<header id="topbar" class="topbar" role="banner">
+  <!-- Renderizado por topbar.js -->
+</header>
+
+<!-- ══════════════════════════════════════════
+     CONTENIDO PRINCIPAL
+══════════════════════════════════════════ -->
+<main
+  id="main-content"
+  style="margin-left: var(--sidebar-w); margin-top: var(--topbar-h); padding: 2rem; min-height: calc(100vh - var(--topbar-h)); transition: margin-left 0.3s ease;"
+  role="main"
+>
+  <!-- El contenido de cada página va aquí -->
+  <!-- Cada página incluye este layout y agrega su contenido en #page-content -->
+  <div id="page-content">
+    <!-- Placeholder de carga -->
+    <div style="display:flex;align-items:center;justify-content:center;min-height:400px;flex-direction:column;gap:1rem;">
+      <div class="loader" style="width:32px;height:32px;border-width:3px;"></div>
+      <p style="color:var(--text-muted);font-size:0.9rem;">Cargando módulo…</p>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════ -->
+<div id="toast-container" role="alert" aria-live="polite"></div>
+
+<!-- ══════════════════════════════════════════
+     MODAL CONTAINER (global)
+══════════════════════════════════════════ -->
+<div id="modal-container"></div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS — Orden de carga correcto
+══════════════════════════════════════════ -->
+<script type="module">
+  import { Auth }         from '/assets/js/core/auth.js';
+  import { Sidebar }      from '/assets/js/components/sidebar.js';
+  import { Topbar }       from '/assets/js/components/topbar.js';
+  import { socketClient } from '/assets/js/core/socket.js';
+  import { Store }        from '/assets/js/core/store.js';
+
+  /* ── Guard de autenticación ── */
+  if (!Auth.requireAuth()) {
+    throw new Error('Not authenticated — redirecting');
+  }
+
+  /* ── Inicializar componentes del layout ── */
+  const sidebar = new Sidebar();
+  const topbar  = new Topbar(sidebar);
+
+  /* ── Conectar Socket.IO ── */
+  socketClient.connect();
+
+  /* ── Exponer globalmente para uso en páginas hijas ── */
+  window._sidebar      = sidebar;
+  window._topbar       = topbar;
+  window._socket       = socketClient;
+  window._store        = Store;
+
+  /* ── Responsive: cerrar sidebar al redimensionar ── */
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024 && sidebar.mobileOpen) {
+      sidebar.toggleMobile();
+    }
+  });
+
+  /* ── Evento personalizado: notificar a la página actual ── */
+  document.dispatchEvent(new CustomEvent('medicore:ready', {
+    detail: { sidebar, topbar, socket: socketClient, store: Store }
+  }));
+</script>
+
+</body>
+</html>

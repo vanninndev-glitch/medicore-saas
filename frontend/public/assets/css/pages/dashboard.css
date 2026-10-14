@@ -1,0 +1,460 @@
+/* ============================================================
+   MediCore SaaS — dashboard.css
+   Estilos del dashboard principal
+   ============================================================ */
+
+/* ── Grid principal del dashboard ── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.25rem;
+}
+
+/* ── KPI Cards ── */
+.kpi-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  cursor: default;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--kpi-color, var(--accent-cyan));
+  opacity: 0.7;
+}
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -20px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: var(--kpi-color, var(--accent-cyan));
+  opacity: 0.04;
+}
+
+.kpi-card:hover {
+  border-color: var(--border-dim);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.kpi-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-white);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+}
+
+.kpi-delta.up   { background: rgba(0,229,160,0.1); color: var(--accent-green); }
+.kpi-delta.down { background: rgba(255,71,87,0.1);  color: var(--accent-red); }
+.kpi-delta.flat { background: rgba(255,179,71,0.1); color: var(--accent-amber); }
+
+.kpi-icon {
+  position: absolute;
+  bottom: 1rem; right: 1.2rem;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  color: var(--kpi-color, var(--accent-cyan));
+}
+
+/* Colores de KPI */
+.kpi-cyan   { --kpi-color: var(--accent-cyan); }
+.kpi-green  { --kpi-color: var(--accent-green); }
+.kpi-blue   { --kpi-color: #5599ff; }
+.kpi-amber  { --kpi-color: var(--accent-amber); }
+.kpi-red    { --kpi-color: var(--accent-red); }
+.kpi-purple { --kpi-color: #a78bfa; }
+
+/* ── Panel de gráficas ── */
+.chart-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.chart-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.chart-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.chart-filters {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.chart-filter-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chart-filter-btn:hover,
+.chart-filter-btn.active {
+  background: rgba(0,212,255,0.1);
+  border-color: rgba(0,212,255,0.3);
+  color: var(--accent-cyan);
+}
+
+.chart-wrap {
+  position: relative;
+  height: 220px;
+}
+
+/* ── Mapa de camas ── */
+.beds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 0.5rem;
+}
+
+.bed-cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bed-cell:hover { transform: scale(1.08); z-index: 1; }
+
+.bed-cell.available {
+  background: rgba(0,229,160,0.08);
+  border-color: rgba(0,229,160,0.25);
+  color: var(--accent-green);
+}
+.bed-cell.occupied {
+  background: rgba(255,71,87,0.08);
+  border-color: rgba(255,71,87,0.25);
+  color: var(--accent-red);
+}
+.bed-cell.reserved {
+  background: rgba(255,179,71,0.08);
+  border-color: rgba(255,179,71,0.25);
+  color: var(--accent-amber);
+}
+.bed-cell.maintenance {
+  background: rgba(100,100,120,0.1);
+  border-color: rgba(100,100,120,0.2);
+  color: var(--text-muted);
+}
+.bed-cell.cleaning {
+  background: rgba(26,111,255,0.08);
+  border-color: rgba(26,111,255,0.25);
+  color: #5599ff;
+}
+
+.bed-number {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+/* ── Lista de actividad reciente ── */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.activity-item:last-child { border-bottom: none; }
+
+.activity-dot-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.activity-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.activity-line {
+  width: 1px;
+  flex: 1;
+  background: var(--border-subtle);
+  margin-top: 4px;
+  min-height: 24px;
+}
+
+.activity-item:last-child .activity-line { display: none; }
+
+.activity-body { flex: 1; min-width: 0; }
+.activity-text { font-size: 0.85rem; color: var(--text-primary); line-height: 1.4; }
+.activity-text strong { color: var(--text-white); }
+.activity-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Panel de citas del día ── */
+.appointment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.appointment-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.appointment-row:hover {
+  background: rgba(0,212,255,0.04);
+  border-color: var(--border-dim);
+}
+
+.appt-time {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  width: 48px;
+}
+
+.appt-divider {
+  width: 2px;
+  height: 32px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.appt-info { flex: 1; min-width: 0; }
+.appt-patient { font-size: 0.87rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appt-type    { font-size: 0.75rem; color: var(--text-muted); }
+
+.appt-status {
+  flex-shrink: 0;
+}
+
+/* ── Panel de urgencias ── */
+.urgency-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255,71,87,0.04);
+  border: 1px solid rgba(255,71,87,0.15);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.urgency-item:hover {
+  background: rgba(255,71,87,0.08);
+  border-color: rgba(255,71,87,0.3);
+}
+
+.triage-badge {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.triage-1 { background: rgba(255,71,87,0.2);  color: var(--accent-red); }
+.triage-2 { background: rgba(255,128,0,0.2);   color: #ff8000; }
+.triage-3 { background: rgba(255,179,71,0.2);  color: var(--accent-amber); }
+.triage-4 { background: rgba(0,229,160,0.15);  color: var(--accent-green); }
+.triage-5 { background: rgba(26,111,255,0.15); color: #5599ff; }
+
+/* ── Panel de métricas rápidas ── */
+.mini-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.mini-metric:last-child { border-bottom: none; }
+
+.mini-metric-label { font-size: 0.82rem; color: var(--text-secondary); }
+.mini-metric-value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Progress bar ── */
+.progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--fill-color, var(--accent-cyan));
+}
+
+/* ── Three.js canvas de fondo en dashboard ── */
+#dashboard-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ── Welcome banner ── */
+.welcome-banner {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(26,111,255,0.12), rgba(0,212,255,0.08));
+  border: 1px solid rgba(0,212,255,0.15);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  right: -30px; top: -30px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.12), transparent 70%);
+}
+
+.welcome-time {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.welcome-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-white);
+  font-family: var(--font-display);
+}
+
+.welcome-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+/* ── Responsive del dashboard ── */
+@media (max-width: 1280px) {
+  .col-lg-8  { grid-column: span 12 !important; }
+  .col-lg-4  { grid-column: span 12 !important; }
+}
+
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-grid { gap: 0.75rem; }
+  .kpi-value { font-size: 1.6rem; }
+}
+
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+}

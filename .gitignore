@@ -1,0 +1,36 @@
+# ── Entorno (NUNCA subir al repo) ──
+backend/.env
+backend/.env.local
+backend/.env.production
+
+# ── Dependencias ──
+backend/node_modules/
+frontend/node_modules/
+
+# ── Logs y uploads ──
+backend/logs/
+backend/uploads/
+
+# ── OS / Editor ──
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.swp
+
+# ── PM2 ──
+backend/.pm2/
+
+# ── Secretos y archivos locales (GitHub) ──
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+recovery-codes.txt
+*recovery*codes*
+credentials.json
+service-account*.json

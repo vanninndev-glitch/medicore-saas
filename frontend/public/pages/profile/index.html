@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Perfil — MediCore</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/components/sidebar.css"/>
+  <link rel="stylesheet" href="/assets/css/components/topbar.css"/>
+  <link rel="stylesheet" href="/assets/css/pages/patients.css"/>
+  <link rel="stylesheet" href="/assets/css/pages/dashboard.css"/>
+  <script>window.MEDICORE_API_URL="http://localhost:3000/api/v1";window.MEDICORE_SOCKET_URL="http://localhost:3000";</script>
+</head>
+<body>
+<aside id="sidebar" role="complementary"></aside>
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+<header id="topbar" class="topbar" role="banner"></header>
+<main id="main-content" role="main" style="margin-left:var(--sidebar-w);margin-top:var(--topbar-h);padding:1.75rem;min-height:calc(100vh - var(--topbar-h));transition:margin-left 0.3s ease;">
+  <div id="page-content"></div>
+</main>
+<div id="toast-container" role="alert" aria-live="polite"></div>
+<div id="modal-container"></div>
+<script type="module">
+  import { Auth }          from "/assets/js/core/auth.js";
+  import { Sidebar }       from "/assets/js/components/sidebar.js";
+  import { Topbar }        from "/assets/js/components/topbar.js";
+  import { socketClient }  from "/assets/js/core/socket.js";
+  import { Store }         from "/assets/js/core/store.js";
+  import { ProfileModule } from "/assets/js/pages/profile/index.js";
+  if (!Auth.requireAuth()) throw new Error("Unauthenticated");
+  const sidebar = new Sidebar(); const topbar = new Topbar(sidebar);
+  socketClient.connect();
+  window._sidebar=sidebar;window._topbar=topbar;window._socket=socketClient;window._store=Store;
+  document.getElementById("sidebar-overlay")?.addEventListener("click",()=>sidebar.toggleMobile());
+  window.addEventListener("resize",()=>{if(window.innerWidth>1024&&sidebar.mobileOpen)sidebar.toggleMobile();});
+  const mod = new ProfileModule(); await mod.init();
+</script>
+</body>
+</html>

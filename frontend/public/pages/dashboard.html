@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Dashboard — MediCore</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Socket.IO -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/components/sidebar.css" />
+  <link rel="stylesheet" href="/assets/css/components/topbar.css" />
+  <link rel="stylesheet" href="/assets/css/pages/dashboard.css" />
+
+  <script>
+    window.MEDICORE_API_URL    = 'http://localhost:3000/api/v1';
+    window.MEDICORE_SOCKET_URL = 'http://localhost:3000';
+  </script>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside id="sidebar" role="complementary"></aside>
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<!-- Topbar -->
+<header id="topbar" class="topbar" role="banner"></header>
+
+<!-- Contenido principal -->
+<main
+  id="main-content"
+  role="main"
+  style="margin-left:var(--sidebar-w);margin-top:var(--topbar-h);padding:1.75rem;min-height:calc(100vh - var(--topbar-h));transition:margin-left 0.3s ease;"
+>
+  <div id="page-content"></div>
+</main>
+
+<!-- Toast -->
+<div id="toast-container" role="alert" aria-live="polite"></div>
+<div id="modal-container"></div>
+
+<script type="module">
+  import { Auth }         from '/assets/js/core/auth.js';
+  import { Sidebar }      from '/assets/js/components/sidebar.js';
+  import { Topbar }       from '/assets/js/components/topbar.js';
+  import { socketClient } from '/assets/js/core/socket.js';
+  import { Store }        from '/assets/js/core/store.js';
+  import { Dashboard }    from '/assets/js/pages/dashboard/dashboard.js';
+
+  if (!Auth.requireAuth()) throw new Error('Unauthenticated');
+
+  const sidebar   = new Sidebar();
+  const topbar    = new Topbar(sidebar);
+  socketClient.connect();
+
+  window._sidebar = sidebar;
+  window._topbar  = topbar;
+  window._socket  = socketClient;
+  window._store   = Store;
+
+  // Manejar toggle del overlay mobile
+  document.getElementById('sidebar-overlay')
+    ?.addEventListener('click', () => sidebar.toggleMobile());
+
+  // Inicializar dashboard una vez el layout está listo
+  const dash = new Dashboard();
+  await dash.init();
+
+  // Responsive
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024 && sidebar.mobileOpen) sidebar.toggleMobile();
+  });
+</script>
+</body>
+</html>

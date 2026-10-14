@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acceso denegado — MediCore</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; overflow:hidden; }
+    #bg-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.25; }
+    .error-content { position:relative; z-index:1; text-align:center; padding:2rem; max-width:480px; animation:fadeIn 0.6s ease; }
+    .error-code { font-family:var(--font-display); font-size:clamp(6rem,15vw,10rem); font-weight:900; line-height:1;
+      background:linear-gradient(135deg,var(--accent-red),#ff8000); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:0.5rem; }
+    .shield { width:72px; height:72px; background:rgba(255,71,87,0.12); border:2px solid rgba(255,71,87,0.25);
+      border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;
+      box-shadow:0 0 30px rgba(255,71,87,0.2); }
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="error-content">
+  <div class="shield">
+    <svg width="32" height="32" fill="none" stroke="var(--accent-red)" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+    </svg>
+  </div>
+  <div class="error-code">403</div>
+  <h1 style="font-size:1.5rem;margin-bottom:0.75rem;color:#fff;">Acceso denegado</h1>
+  <p style="color:var(--text-secondary);margin-bottom:2rem;line-height:1.7;">
+    No tienes permisos para acceder a esta sección. Si crees que es un error,
+    contacta al administrador de tu hospital.
+  </p>
+  <div class="flex gap-3 justify-center flex-wrap">
+    <button class="btn btn-secondary" onclick="history.back()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      Regresar
+    </button>
+    <a href="/pages/dashboard.html" class="btn btn-primary">Ir al dashboard</a>
+  </div>
+  <div style="margin-top:2rem;font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);">
+    MediCore SaaS · Error 403 · Unauthorized
+  </div>
+</div>
+<script>
+  if (typeof THREE !== 'undefined') {
+    const canvas = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha:true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+    camera.position.z = 20;
+    const count = 120;
+    const pos = new Float32Array(count*3);
+    for(let i=0;i<count;i++){pos[i*3]=(Math.random()-.5)*60;pos[i*3+1]=(Math.random()-.5)*50;pos[i*3+2]=(Math.random()-.5)*30-5;}
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({color:0xff4757,size:0.1,transparent:true,opacity:0.5}));
+    scene.add(pts);
+    let f=0;
+    (function animate(){ requestAnimationFrame(animate); f++;
+      pts.rotation.y=f*0.003; pts.rotation.x=f*0.002;
+      renderer.render(scene,camera);
+    })();
+    window.addEventListener('resize',()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); });
+  }
+</script>
+</body>
+</html>

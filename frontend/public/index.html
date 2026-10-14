@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MediCore SaaS — Sistema de Gestión Hospitalaria" />
+  <title>MediCore — Acceso al Sistema</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="assets/css/main.css" />
+
+  <style>
+    /* ── Login-specific styles ── */
+    body { overflow: hidden; }
+
+    /* Canvas de fondo */
+    #login-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Overlay de gradiente sobre el canvas */
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse 60% 70% at 15% 50%, rgba(0,212,255,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 85% 50%, rgba(26,111,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 40% at 50% 100%, rgba(0,0,0,0.8) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Grid de puntos sutil */
+    .dot-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image: radial-gradient(circle, rgba(0,212,255,0.07) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+    }
+
+    /* Layout principal */
+    .login-layout {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+    }
+
+    /* Panel izquierdo - branding */
+    .brand-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 3rem 4rem 5rem;
+    }
+
+    /* Panel derecho - login */
+    .login-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 3rem 3rem 2.5rem;
+      background: rgba(6, 13, 20, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-left: 1px solid rgba(0,212,255,0.08);
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* Logo */
+    .logo-mark {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(0,212,255,0.3);
+      flex-shrink: 0;
+    }
+
+    /* Tag de rol selector */
+    .role-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.15);
+      color: var(--accent-cyan);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+    .role-tag:hover {
+      background: rgba(0,212,255,0.16);
+      border-color: rgba(0,212,255,0.35);
+    }
+    .role-tag.active {
+      background: rgba(0,212,255,0.18);
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    /* Input styles extendidos */
+    .login-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 10px;
+      padding: 0.85rem 1rem 0.85rem 2.9rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-family: var(--font-sans);
+      transition: all 0.22s ease;
+      outline: none;
+    }
+    .login-input::placeholder { color: var(--text-muted); }
+    .login-input:focus {
+      border-color: var(--accent-cyan);
+      background: rgba(0,212,255,0.05);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+    }
+    .login-input.error {
+      border-color: var(--accent-red) !important;
+      box-shadow: 0 0 0 3px rgba(255,71,87,0.1) !important;
+    }
+
+    .field-error {
+      font-size: 0.78rem;
+      color: var(--accent-red);
+      margin-top: 0.3rem;
+      display: none;
+    }
+
+    /* Botón login */
+    .login-btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, #1a6fff, #00a8cc);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.22s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,168,204,0.3);
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.22s ease;
+    }
+    .login-btn:hover::before { opacity: 1; }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,168,204,0.45);
+    }
+    .login-btn:active { transform: translateY(0); }
+    .login-btn:disabled {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    /* Scanline decorativa */
+    .scanline {
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+      animation: scanline 3s linear infinite;
+      pointer-events: none;
+    }
+
+    /* Stats decorativos */
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(0,212,255,0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Animación shake para errores */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-6px); }
+      80%       { transform: translateX(6px); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .login-layout { grid-template-columns: 1fr; }
+      .brand-panel  { display: none; }
+      .login-panel  {
+        border-left: none;
+        padding: 2rem 1.5rem;
+        background: rgba(6,13,20,0.95);
+      }
+    }
+
+    /* Loader spinner pequeño */
+    .btn-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Canvas Three.js -->
+<canvas id="login-canvas"></canvas>
+
+<!-- Overlay y grilla -->
+<div class="bg-overlay"></div>
+<div class="dot-grid"></div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Layout principal -->
+<div class="login-layout">
+
+  <!-- ══════════════════════════════════
+       PANEL IZQUIERDO — BRANDING
+  ══════════════════════════════════ -->
+  <div class="brand-panel">
+
+    <!-- Logo + nombre -->
+    <div class="flex items-center gap-4 mb-12" data-animate>
+      <div class="logo-mark">
+        <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
+          <path d="M14 4v20M4 14h20" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="12" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+          <circle cx="14" cy="14" r="7" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing:-0.02em;">
+          Medi<span style="color: var(--accent-cyan)">Core</span>
+        </div>
+        <div style="font-size:0.75rem; color: var(--text-muted); letter-spacing:0.12em; text-transform:uppercase; margin-top:1px;">
+          Sistema Hospitalario
+        </div>
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <div data-animate>
+      <h1 style="font-size: clamp(2rem,3.5vw,3rem); line-height:1.1; margin-bottom:1.2rem;">
+        Gestión hospitalaria<br/>
+        <span style="
+          background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        ">inteligente y segura</span>
+      </h1>
+      <p style="font-size:1rem; color: var(--text-secondary); max-width:400px; line-height:1.8;">
+        Plataforma SaaS multi-hospital con historial clínico electrónico, 
+        citas en tiempo real, incapacidades digitales y más de 28 módulos 
+        especializados para hospitales de cualquier tamaño.
+      </p>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex flex-col gap-3 mt-10" data-animate>
+      <div class="stat-chip" style="width: fit-content">
+        <div class="dot dot-green"></div>
+        <span style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary)">
+          28 módulos · 25 roles · 21 especialidades
+        </span>
+      </div>
+      <div class="stat-chip" style="width: fit-content">
+        <div class="dot dot-cyan"></div>
+        <span style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary)">
+          NOM-024 · NOM-004 · HL7 FHIR · CFDI 4.0
+        </span>
+      </div>
+      <div class="stat-chip" style="width: fit-content">
+        <svg width="14" height="14" fill="none" stroke="var(--accent-amber)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <span style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-secondary)">
+          JWT · RBAC · AES-256 · TLS · Audit log
+        </span>
+      </div>
+    </div>
+
+    <!-- Módulos visuales -->
+    <div class="flex flex-wrap gap-2 mt-10" data-animate>
+      <span class="badge badge-cyan">Historial Clínico</span>
+      <span class="badge badge-blue">Citas en Tiempo Real</span>
+      <span class="badge badge-green">Incapacidades</span>
+      <span class="badge badge-amber">Laboratorio</span>
+      <span class="badge badge-cyan">Quirófano</span>
+      <span class="badge badge-blue">UCI</span>
+      <span class="badge badge-green">Farmacia</span>
+      <span class="badge badge-amber">CFDI 4.0</span>
+      <span class="badge badge-cyan">Telemedicina</span>
+      <span class="badge badge-blue">Radiología DICOM</span>
+    </div>
+
+    <!-- Footer branding -->
+    <div style="margin-top: auto; padding-top: 3rem;" data-animate>
+      <p style="font-size:0.75rem; color: var(--text-muted);">
+        © 2024 MediCore SaaS · Todos los derechos reservados
+      </p>
+    </div>
+
+  </div><!-- /brand-panel -->
+
+
+  <!-- ══════════════════════════════════
+       PANEL DERECHO — LOGIN FORM
+  ══════════════════════════════════ -->
+  <div class="login-panel" style="position:relative; overflow:hidden;">
+
+    <!-- Scanline decorativa -->
+    <div class="scanline"></div>
+
+    <!-- Contenedor interno -->
+    <div style="max-width: 380px; margin: 0 auto; width: 100%;">
+
+      <!-- Logo mobile -->
+      <div class="flex items-center gap-3 mb-8" data-animate>
+        <div class="logo-mark" style="width:40px;height:40px;border-radius:10px;">
+          <svg width="22" height="22" fill="none" viewBox="0 0 28 28">
+            <path d="M14 4v20M4 14h20" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:#fff;">
+            Medi<span style="color:var(--accent-cyan)">Core</span>
+          </div>
+          <div style="font-size:0.68rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
+            Sistema Hospitalario
+          </div>
+        </div>
+      </div>
+
+      <!-- Título del formulario -->
+      <div style="margin-bottom: 1.8rem;" data-animate>
+        <h2 style="font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:0.3rem;">
+          Iniciar sesión
+        </h2>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">
+          Ingresa tus credenciales para acceder al sistema
+        </p>
+      </div>
+
+      <!-- Demos rápidos -->
+      <div style="margin-bottom:1.5rem;" data-animate>
+        <p style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.6rem;">
+          Demo rápido — selecciona un rol:
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button class="role-tag" data-demo-role="superadmin">
+            <span style="font-size:0.65rem;">👑</span> Superadmin
+          </button>
+          <button class="role-tag" data-demo-role="admin">
+            <span style="font-size:0.65rem;">🏥</span> Admin Hosp.
+          </button>
+          <button class="role-tag" data-demo-role="doctor">
+            <span style="font-size:0.65rem;">👨‍⚕️</span> Doctor
+          </button>
+          <button class="role-tag" data-demo-role="nurse">
+            <span style="font-size:0.65rem;">🩺</span> Enfermera
+          </button>
+          <button class="role-tag" data-demo-role="patient">
+            <span style="font-size:0.65rem;">🧑</span> Paciente
+          </button>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3 mb-5" data-animate>
+        <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
+        <span style="font-size:0.75rem;color:var(--text-muted)">o ingresa manualmente</span>
+        <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
+      </div>
+
+      <!-- Formulario -->
+      <form id="login-form" novalidate data-animate>
+
+        <!-- Email -->
+        <div style="margin-bottom:1.1rem;">
+          <label style="display:block;font-size:0.78rem;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem;">
+            Correo electrónico
+          </label>
+          <div style="position:relative;">
+            <div style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;transition:color 0.22s ease;" class="field-icon-email">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <input
+              type="email"
+              id="email"
+              class="login-input"
+              placeholder="doctor@hospital.mx"
+              autocomplete="email"
+              spellcheck="false"
+            />
+          </div>
+          <div id="email-error" class="field-error"></div>
+        </div>
+
+        <!-- Password -->
+        <div style="margin-bottom:1.4rem;">
+          <div class="flex justify-between items-center" style="margin-bottom:0.5rem;">
+            <label style="font-size:0.78rem;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;">
+              Contraseña
+            </label>
+            <a href="#" style="font-size:0.78rem;color:var(--accent-cyan);transition:opacity 0.2s;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+          <div style="position:relative;">
+            <div style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <input
+              type="password"
+              id="password"
+              class="login-input"
+              placeholder="••••••••••"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              id="toggle-password"
+              style="position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);color:var(--text-muted);padding:4px;transition:color 0.22s ease;background:none;border:none;cursor:pointer;"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+          <div id="password-error" class="field-error"></div>
+        </div>
+
+        <!-- Remember me -->
+        <div class="flex items-center gap-2" style="margin-bottom:1.5rem;">
+          <input type="checkbox" id="remember" style="
+            width:16px;height:16px;
+            accent-color: var(--accent-cyan);
+            cursor:pointer;
+          "/>
+          <label for="remember" style="font-size:0.85rem;color:var(--text-secondary);cursor:pointer;">
+            Mantener sesión iniciada
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="login-btn" class="login-btn">
+          <span id="btn-text">Ingresar al sistema</span>
+          <span id="btn-loader" style="display:none; align-items:center; gap:0.5rem;">
+            <div class="btn-spinner"></div>
+            <span>Verificando…</span>
+          </span>
+          <svg id="btn-arrow" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+
+      </form>
+
+      <!-- Divider -->
+      <div style="margin:1.5rem 0; height:1px; background:var(--border-subtle);"></div>
+
+      <!-- Info de soporte -->
+      <div style="text-align:center;" data-animate>
+        <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.6;">
+          ¿Problemas para acceder?<br/>
+          Contacta al administrador de tu hospital o escríbenos a<br/>
+          <a href="mailto:soporte@medicore.mx" style="color:var(--accent-cyan);transition:opacity 0.2s;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+            soporte@medicore.mx
+          </a>
+        </p>
+      </div>
+
+      <!-- Badges de seguridad -->
+      <div class="flex flex-wrap justify-center gap-2 mt-5" data-animate>
+        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.68rem;color:var(--text-muted);">
+          <svg width="11" height="11" fill="var(--accent-green)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Cifrado SSL
+        </span>
+        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.68rem;color:var(--text-muted);">
+          <svg width="11" height="11" fill="var(--accent-cyan)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          NOM-024 SSA3
+        </span>
+        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.68rem;color:var(--text-muted);">
+          <svg width="11" height="11" fill="var(--accent-amber)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          HIPAA Ready
+        </span>
+        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.68rem;color:var(--text-muted);">
+          <svg width="11" height="11" fill="var(--accent-blue)" viewBox="0 0 20 20"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          AES-256 docs
+        </span>
+      </div>
+
+      <!-- Versión -->
+      <p style="text-align:center;font-family:var(--font-mono);font-size:0.67rem;color:var(--text-muted);margin-top:1.5rem;">
+        MediCore v1.0.0 · Build 2024
+      </p>
+
+    </div><!-- /inner -->
+  </div><!-- /login-panel -->
+
+</div><!-- /login-layout -->
+
+<!-- Scripts como módulos ES -->
+<script type="module" src="assets/js/pages/login.js"></script>
+
+</body>
+</html>
